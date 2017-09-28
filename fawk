@@ -27,11 +27,11 @@ BEGIN {
 		print;
 		print "	Search recursively in directories all files containing \"text to search\" inside all txt files:"
 		print;
-		print "		find . -iname \\*.txt -exec fawk \"text to search\" {} \\;"
+		print "		find . -type f -name \\*.txt -exec fawk \"text to search\" {} \\;"
 		print;
 		print "	Search recursively in directories all files containing \"text to search\" inside all txt files, but show only the filenames:"
 		print;
-		print "		find . -iname \\*.txt -exec fawk \"text to search\" {} -f \\;"
+		print "		find . -type f -name \\*.txt -exec fawk \"text to search\" {} -f \\;"
 	}
 
 	# Get the string passed as argument to this script.
