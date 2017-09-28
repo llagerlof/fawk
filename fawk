@@ -9,10 +9,10 @@ BEGIN {
 		print;
 		print "Description:"
 		print "	fawk is a script to find text inside files. Easy to use and nice output, get the job done."
-		print
+		print;
 		print "Usage:"
 		print "	fawk \"<string>\" <files> [-f]"
-		print
+		print;
 		print "Options:"
 		print "	-f = output only the filenames, not the lines containing the searched string."
 		print;
