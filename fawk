@@ -1,15 +1,5 @@
 #!/bin/awk -f
 
-# Function to find element in array.
-function inarray(value_to_find, array_to_search) {
-	for (i in array_to_search) {
-		if (array_to_search[i] == value_to_find) {
-			return 1;
-		}
-	}
-	return 0;
-}
-
 BEGIN {
 
 	# Text formatting variables.
@@ -20,35 +10,35 @@ BEGIN {
 	# Show help if number of arguments is fewer than 2.
 	if (ARGC < 3) {
 		print;
-		print BOLD "fawk 1.3" CLEARFORMAT;
+		print BOLD "fawk 1.4" CLEARFORMAT;
 
 		print;
 		print "Description:"
 		print "	fawk is a script to find text inside files. Easy to use and nice output, get the job done."
 		print;
 		print "Usage:"
-		print "	fawk \"<string>\" <files> [-f] [-c]"
+		print "	fawk '<string>' <files> [-f] [-c]"
 		print;
 		print "Options:"
 		print "	-f = filenames only: output only the filenames, not the lines containing the searched string."
 		print "	-c = case sensitive: force case sensitive search."
 		print;
 		print "Examples:"
-		print "	Search all files containing \"string to search\" inside all php files:"
+		print "	Search all files containing 'string to search' inside all php files:"
 		print;
-		print "		fawk \"string to search\" *.php"
+		print "		fawk 'string to search' *.php"
 		print;
-		print "	Search all files containing \"string to search\" inside all php files, but show only the filenames:"
+		print "	Search all files containing 'string to search' inside all php files, but show only the filenames:"
 		print;
-		print "		fawk \"string to search\" *.php -f"
+		print "		fawk 'string to search' *.php -f"
 		print;
-		print "	Search recursively in directories all files containing \"text to search\" inside all txt files:"
+		print "	Search recursively in directories all files containing 'text to search' inside all txt files:"
 		print;
-		print "		find . -type f -name \\*.txt -exec fawk \"text to search\" {} \\;"
+		print "		find . -type f -name \\*.txt -exec fawk 'text to search' {} \\;"
 		print;
-		print "	Search recursively in directories all files containing \"text to search\" inside all txt files, but show only the filenames:"
+		print "	Search recursively in directories all files containing 'text to search' inside all txt files, but show only the filenames:"
 		print;
-		print "		find . -type f -name \\*.txt -exec fawk \"text to search\" {} -f \\;"
+		print "		find . -type f -name \\*.txt -exec fawk 'text to search' {} -f \\;"
 
 		exit 1;
 	}
@@ -86,13 +76,14 @@ BEGIN {
 				size_string = length(search_filter);
 				original_string = substr(line, index_string, size_string);
 				line_formatted = line;
+				search_filter = escapeString(search_filter);
 				gsub(search_filter, BOLD original_string CLEARFORMAT, line_formatted);
 				lines_found = lines_found "   {" NR "}" " " line_formatted "\n";
 			}
 			NR++;
   		}
 
-		# Show only filenames if the search string was found
+		# Output
 		if (lines_found != "") {
 			print YELLOW ARGV[i] CLEARFORMAT;
 			if (files_only != 1) {
@@ -100,4 +91,34 @@ BEGIN {
 			}
 		}
 	}
+}
+
+#SUPPORT FUNCTIONS
+
+# Function to find element in array.
+function inarray(value_to_find, array_to_search) {
+	for (i in array_to_search) {
+		if (array_to_search[i] == value_to_find) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+# Function to escape all regex special characters: [\^$.|?*+(){}
+function escapeString(str) {
+	gsub(/\[/, "\\[", str);
+	gsub(/\\/, "\\\\", str);
+	gsub(/\^/, "\\^", str);
+	gsub(/\$/, "\\$", str);
+	gsub(/\./, "\\.", str);
+	gsub(/\|/, "\\|", str);
+	gsub(/\?/, "\\?", str);
+	gsub(/\*/, "\\*", str);
+	gsub(/\+/, "\\+", str);
+	gsub(/\(/, "\\(", str);
+	gsub(/\)/, "\\)", str);
+	gsub(/\{/, "\\{", str);
+	gsub(/\}/, "\\}", str);
+	return str;
 }
