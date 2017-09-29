@@ -1,20 +1,37 @@
 #!/bin/awk -f
 
+# Function to find element in array.
+function inarray(value_to_find, array_to_search) {
+	for (i in array_to_search) {
+		if (array_to_search[i] == value_to_find) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
 BEGIN {
+
+	# Text formatting variables.
+	BOLD = "\033[1m";
+	CLEARFORMAT = "\033[0m";
+	YELLOW = "\033[1;33m";
 
 	# Show help if number of arguments is fewer than 2.
 	if (ARGC < 3) {
 		print;
-		print "fawk 1.2";
+		print BOLD "fawk 1.3" CLEARFORMAT;
+
 		print;
 		print "Description:"
 		print "	fawk is a script to find text inside files. Easy to use and nice output, get the job done."
 		print;
 		print "Usage:"
-		print "	fawk \"<string>\" <files> [-f]"
+		print "	fawk \"<string>\" <files> [-f] [-c]"
 		print;
 		print "Options:"
-		print "	-f = output only the filenames, not the lines containing the searched string."
+		print "	-f = filenames only: output only the filenames, not the lines containing the searched string."
+		print "	-c = case sensitive: force case sensitive search."
 		print;
 		print "Examples:"
 		print "	Search all files containing \"string to search\" inside all php files:"
@@ -32,34 +49,52 @@ BEGIN {
 		print "	Search recursively in directories all files containing \"text to search\" inside all txt files, but show only the filenames:"
 		print;
 		print "		find . -type f -name \\*.txt -exec fawk \"text to search\" {} -f \\;"
+
+		exit 1;
 	}
 
 	# Get the string passed as argument to this script.
-	search_filter=ARGV[1];
+	search_filter = ARGV[1];
 
-	# Check if "files only" parameter is set.
+	# Count the number of options set at the end of command line.
+	number_of_options = 0;
+
+	# Check if "filenames only" parameter is set.
 	files_only=0;
-	if (ARGV[ARGC-1] == "-f") {
+	if (inarray("-f", ARGV)) {
 		files_only = 1;
+		number_of_options++;
+	}
+
+	# Check if "case sensitive" parameter is set.
+	IGNORECASE = 1;
+	if (inarray("-c", ARGV)) {
+		IGNORECASE = 0;
+		number_of_options++;
 	}
 
 	# Loop in files
-	for (i = 2; i < (ARGC-files_only); i++) {
-		NR=1; # line number
-		lines_found="";
+	for (i = 2; i < (ARGC - number_of_options); i++) {
+		NR = 1; # line number.
+		lines_found = "";
 
 		# Loop in lines of file
-		while(( getline line<ARGV[i]) > 0 ) {
+		while ((getline line<ARGV[i]) > 0) {
 			# Get only lines containing the search string.
-			if (index(line, search_filter) > 0) {
-				lines_found=lines_found "   {" NR "}" " " line "\n";
+			index_string = index(line, search_filter);
+			if (index_string > 0) {
+				size_string = length(search_filter);
+				original_string = substr(line, index_string, size_string);
+				line_formatted = line;
+				gsub(search_filter, BOLD original_string CLEARFORMAT, line_formatted);
+				lines_found = lines_found "   {" NR "}" " " line_formatted "\n";
 			}
 			NR++;
   		}
 
 		# Show only filenames if the search string was found
 		if (lines_found != "") {
-			print ARGV[i];
+			print YELLOW ARGV[i] CLEARFORMAT;
 			if (files_only != 1) {
 				print lines_found;
 			}
